@@ -42,5 +42,5 @@ data="${1:-/dev/stdin}"
 
 paste -d, \
 <(cat $data) \
-<(cat $data | header -d | csvcut -c "$FROM" | sed "s/${DELIMITER}/ /" |
-  header -a "$TO")
+<(cat $data | sed '1d' | csvcut -c "$FROM" | sed "s/${DELIMITER}/ /" |
+  sed "1s/^/${TO}\n/")
