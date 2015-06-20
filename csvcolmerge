@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+version()
+{
+  echo "1.0.0"
+  exit 1
+}
+
 usage()
 {
 cat << EOF
@@ -20,14 +26,12 @@ Examples:
   $ < file.csv csvcolmerge -f 3,2 -t 'New column name' -d';' -m-
 
 EOF
-
   exit 1
 }
 
 get_awkbody()
 {
   arr=$(echo $1 | tr "," "\n")
-
   str="\""
 
   for _ in $arr; do
@@ -46,7 +50,7 @@ get_awkbody()
 DELIMITER=","
 MERGE_CHAR=" "
 
-while getopts ":f:t:d:m:" optname
+while getopts "f:t:d:m:hv" optname
 do
   case "$optname" in
     "f")
@@ -61,11 +65,11 @@ do
     "m")
       MERGE_CHAR="${OPTARG:- }"
       ;;
-    ?)
-      echo "Unknown option $OPTARG"
+    "h")
+      usage
       ;;
-    :)
-      echo "No argument value for option $OPTARG"
+    "v")
+      version
       ;;
     *)
       usage
