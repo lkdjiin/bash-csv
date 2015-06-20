@@ -2,13 +2,51 @@
 
 usage()
 {
-  echo "Usage: $0 -f x,y[,...] -t 'New var' [-d ';']" 1>&2
+cat << EOF
+$0: Merge two or more columns into a new column in a CSV file.
+
+usage: $0 OPTIONS -f <indexes> -t <string>
+
+-f and -t are NOT optionals. They are mandatory:
+  -f            List of column indexes separated by a comma
+  -t            The name of the new column
+
+OPTIONS:
+  -d <char>     Delimiter in the input CSV file [default: ","]
+  -m <char>     Merge character in the output file [default: " "]
+
+Examples:
+  $ < file.csv csvcolmerge -f 3,2 -t 'New column name'
+  $ < file.csv csvcolmerge -f 3,2 -t 'New column name' -d';' -m-
+
+EOF
+
   exit 1
 }
 
-DELIMITER=","
+get_awkbody()
+{
+  arr=$(echo $1 | tr "," "\n")
 
-while getopts ":f:t:d:" optname
+  str="\""
+
+  for _ in $arr; do
+    str="${str}%s$MERGE_CHAR"
+  done
+
+  str="${str%?}\n\""
+
+  for x in $arr; do
+    str="${str}, \$$x"
+  done
+
+  echo $str
+}
+
+DELIMITER=","
+MERGE_CHAR=" "
+
+while getopts ":f:t:d:m:" optname
 do
   case "$optname" in
     "f")
@@ -19,6 +57,9 @@ do
       ;;
     "d")
       DELIMITER="${OPTARG:-,}"
+      ;;
+    "m")
+      MERGE_CHAR="${OPTARG:- }"
       ;;
     ?)
       echo "Unknown option $OPTARG"
@@ -39,8 +80,12 @@ fi
 shift $((OPTIND - 1))
 
 data="${1:-/dev/stdin}"
+awkbody=$(get_awkbody $FROM)
 
 paste -d, \
 <(cat $data) \
-<(cat $data | sed '1d' | csvcut -c "$FROM" | sed "s/${DELIMITER}/ /" |
+<(cat $data |
+  sed '1d' |
+  awk -F"$DELIMITER" "{ printf($awkbody) }" |
+  sed "s/${DELIMITER}/ /" |
   sed "1s/^/${TO}\n/")
