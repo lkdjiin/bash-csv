@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+version()
+{
+  echo "1.0.0"
+  exit 1
+}
+
+usage()
+{
+cat << EOF
+$0: Display the name of each column from a CSV file.
+
+usage: $0 OPTIONS file
+
+OPTIONS:
+  -d <char>     Delimiter in the input CSV file [default: ","]
+
+Examples:
+  $ < file.csv csvnames -d';'
+
+EOF
+
+  exit 1
+}
+
+DELIMITER=","
+
+while getopts "d:h" optname
+do
+  case "$optname" in
+    "d")
+      DELIMITER="${OPTARG:-,}"
+      ;;
+    "h")
+      usage
+      ;;
+    "v")
+      version
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+data="${1:-/dev/stdin}"
+
+sed -e "s/$DELIMITER/\n/g;q" "$data" | nl -nrn -w3 -s" "
