@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+usage()
+{
+  echo "Usage: $0 -f x,y[,...] -t 'New var' [-d ';']" 1>&2
+  exit 1
+}
+
+DELIMITER=","
+
+while getopts ":f:t:d:" optname
+do
+  case "$optname" in
+    "f")
+      FROM="$OPTARG"
+      ;;
+    "t")
+      TO="$OPTARG"
+      ;;
+    "d")
+      DELIMITER="${OPTARG:-,}"
+      ;;
+    ?)
+      echo "Unknown option $OPTARG"
+      ;;
+    :)
+      echo "No argument value for option $OPTARG"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+if [[ -z $FROM || -z $TO ]]; then
+  usage
+fi
+
+shift $((OPTIND - 1))
+
+data="${1:-/dev/stdin}"
+
+paste -d, \
+<(cat $data) \
+<(cat $data | header -d | csvcut -c "$FROM" | sed "s/${DELIMITER}/ /" |
+  header -a "$TO")
