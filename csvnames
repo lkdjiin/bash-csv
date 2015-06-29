@@ -2,8 +2,8 @@
 
 version()
 {
-  echo "1.0.0"
-  exit 1
+  echo "1.0.1"
+  exit 0
 }
 
 usage()
@@ -21,7 +21,7 @@ Examples:
 
 EOF
 
-  exit 1
+  exit 0
 }
 
 DELIMITER=","

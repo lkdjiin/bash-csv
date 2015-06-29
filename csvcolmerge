@@ -2,8 +2,8 @@
 
 version()
 {
-  echo "1.0.0"
-  exit 1
+  echo "1.0.1"
+  exit 0
 }
 
 usage()
@@ -26,7 +26,7 @@ Examples:
   $ < file.csv csvcolmerge -f 3,2 -t 'New column name' -d';' -m-
 
 EOF
-  exit 1
+  exit 0
 }
 
 get_awkbody()
